@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace BrowserStack
 {
   [TestFixture("local", "chrome")]
-  public class LocalTest : BaseNUnitTest
+  public class LocalTest : BrowserStackNUnitTest
   {
     public LocalTest(string profile, string environment) : base(profile, environment) { }
 

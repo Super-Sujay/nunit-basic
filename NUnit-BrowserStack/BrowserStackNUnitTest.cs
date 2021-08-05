@@ -14,14 +14,14 @@ using System.IO;
 namespace BrowserStack
 {
     [TestFixture]
-    public class BaseNUnitTest
+    public class BrowserStackNUnitTest
     {
         protected IWebDriver driver;
         protected string profile;
         protected string environment;
         private Local browserStackLocal;
 
-        public BaseNUnitTest(string profile, string environment)
+        public BrowserStackNUnitTest(string profile, string environment)
         {
             this.profile = profile;
             this.environment = environment;
@@ -36,16 +36,10 @@ namespace BrowserStack
             DriverOptions options;
 
             String username = Environment.GetEnvironmentVariable("BROWSERSTACK_USERNAME");
-            if (username == null)
-            {
-                username = ConfigurationManager.AppSettings.Get("user");
-            }
+            if (username == null) username = ConfigurationManager.AppSettings.Get("user");
 
             String accesskey = Environment.GetEnvironmentVariable("BROWSERSTACK_ACCESS_KEY");
-            if (accesskey == null)
-            {
-                accesskey = ConfigurationManager.AppSettings.Get("key");
-            }
+            if (accesskey == null) accesskey = ConfigurationManager.AppSettings.Get("key");
 
             Dictionary<string, object> browserstackOptions = new Dictionary<string, object>();
             foreach (string key in caps.AllKeys) browserstackOptions.Add(key, caps[key]);
@@ -54,20 +48,19 @@ namespace BrowserStack
             browserstackOptions.Add("userName", username);
             browserstackOptions.Add("accessKey", accesskey);
 
-            foreach (var pair in browserstackOptions)
-            {
-                Console.WriteLine($"Employee with key {pair.Key}: value={pair.Value}");
-            }
+            foreach (var pair in browserstackOptions) Console.WriteLine($"{pair.Key}: {pair.Value}");
 
             switch (environment)
             {
                 case "chrome":
-                    options = new ChromeOptions();
+                    options = new EdgeOptions();
+                    options.AddAdditionalCapability("browserName", "Chrome");
                     options.BrowserVersion = "latest";
                     options.AddAdditionalCapability("bstack:options", browserstackOptions);
                     break;
                 case "firefox":
-                    options = new FirefoxOptions();
+                    options = new EdgeOptions();
+                    options.AddAdditionalCapability("browserName", "Firefox");
                     options.BrowserVersion = "latest";
                     options.AddAdditionalCapability("bstack:options", browserstackOptions);
                     break;
@@ -85,7 +78,7 @@ namespace BrowserStack
                     throw new Exception("Incorrect browser specified");
             }
 
-            if (browserstackOptions.ContainsValue("browserstack.local").ToString() == "true")
+            if (browserstackOptions.ContainsValue("local").ToString().Equals("true"))
             {
                 browserStackLocal = new Local();
                 List<KeyValuePair<string, string>> bsLocalArgs = new List<KeyValuePair<string, string>>();
@@ -104,15 +97,8 @@ namespace BrowserStack
         [TearDown]
         public void Cleanup()
         {
-            if (File.Exists("local.log"))
-            {
-                File.Delete("local.log");
-            }
             driver.Quit();
-            if (browserStackLocal != null)
-            {
-                browserStackLocal.stop();
-            }
+            if (browserStackLocal != null) browserStackLocal.stop();
         }
     }
 }
